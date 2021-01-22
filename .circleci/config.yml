@@ -1,0 +1,114 @@
+version: 2.1
+orbs:
+  azure-cli: circleci/azure-cli@1.1.0
+  kube-orb: circleci/kubernetes@0.11.1
+jobs:
+  activity-service:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Create test image, start a container and run tests
+          command: |
+            docker-compose -f docker-compose.test.yml up --build --no-start activity-service
+            docker cp ./confluent/schema-registry/schema-registry.config activity-service-test:/etc/
+            docker cp ./confluent/kafka/librdkafka.config activity-service-test:/etc/
+            docker cp ./scripts/psql-migrate activity-service-test:/usr/local/bin/
+            docker-compose -f docker-compose.test.yml up --exit-code-from activity-service activity-service
+      - run:
+          name: Create deployment image, start a container
+          command: |
+            TARGET=deploy docker-compose -f docker-compose.test.yml up --build --no-start activity-service
+            docker cp ./confluent/schema-registry/schema-registry.config activity-service-deploy:/etc/
+            docker cp ./confluent/kafka/librdkafka.config activity-service-deploy:/etc/
+            TARGET=deploy docker-compose -f docker-compose.test.yml up -d activity-service
+      - run:
+          name: Ensure deployment image is working
+          command: URL=http://activity-service:5000/organizations/1/activities docker-compose -f docker-compose.test.yml up --exit-code-from dockerize dockerize
+      - run:
+          name: Set environment variable with image name and tag
+          command: echo "export ACTIVITY_SERVICE_IMAGE=${AZURE_ACR_NAME}.azurecr.io/activity-service:$(git rev-parse --short HEAD)" >> $BASH_ENV
+      - run:
+          name: Tag deployment image
+          command: docker tag activity-service:deploy $ACTIVITY_SERVICE_IMAGE
+      - azure-cli/install
+      - azure-cli/login-with-service-principal
+      - run: az acr login -n ${AZURE_ACR_NAME}
+      - run: docker push $ACTIVITY_SERVICE_IMAGE
+      - kube-orb/install-kubectl
+      - kube-orb/install-kubeconfig
+      - run: kubectl set image deployments/activity-service activity-service=${ACTIVITY_SERVICE_IMAGE}
+
+  idea_service:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Create test image, start a container and run tests
+          command: |
+            docker-compose -f docker-compose.test.yml up --build --no-start idea-service
+            docker cp ./scripts/psql-migrate idea-service-test:/etc/
+            docker-compose -f docker-compose.test.yml up --exit-code-from idea-service idea-service
+      - run:
+          name: Create deployment image, start a container
+          command: TARGET=deploy docker-compose -f docker-compose.test.yml up --build -d idea-service
+      - run: 
+          name: Ensure deployment image is working
+          command: URL=http://idea-service:8080/organizations/1/ideas docker-compose -f docker-compose.test.yml up --exit-code-from dockerize dockerize
+      - run:
+          name: Set environment variable with image name and tag
+          command: echo "export IDEA_SERVICE_IMAGE=${AZURE_ACR_NAME}.azurecr.io/idea-service:$(git rev-parse --short HEAD)" >> $BASH_ENV
+      - run:
+          name: Tag deployment image
+          command: docker tag idea-service:deploy $IDEA_SERVICE_IMAGE
+      - azure-cli/install
+      - azure-cli/login-with-service-principal
+      - run: az acr login -n ${AZURE_ACR_NAME}
+      - run: docker push $IDEA_SERVICE_IMAGE
+      - kube-orb/install-kubectl
+      - kube-orb/install-kubeconfig
+      - run: kubectl set image deployments/idea-service idea-service=${IDEA_SERVICE_IMAGE}
+
+  organization-service:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Create test image, start a container and run tests
+          command: docker-compose -f docker-compose.test.yml up --build --exit-code-from organization-service organization-service
+      - run:
+          name: Create deployment image, start a container
+          command: TARGET=deploy docker-compose -f docker-compose.test.yml up --build -d organization-service
+      - run:
+          name: Ensure deployment image is working
+          command: URL=http://organization-service:5001/organizations/1 docker-compose -f docker-compose.test.yml up --exit-code-from dockerize dockerize
+      - run:
+          name: Set environment variable with image name and tag
+          command: echo "export ORGANIZATION_SERVICE_IMAGE=${AZURE_ACR_NAME}.azurecr.io/organization-service:$(git rev-parse --short HEAD)" >> $BASH_ENV
+      - run:
+          name: Tag deployment image
+          command: docker tag organization-service:deploy $ORGANIZATION_SERVICE_IMAGE
+      - azure-cli/install
+      - azure-cli/login-with-service-principal
+      - run: az acr login -n ${AZURE_ACR_NAME}
+      - run: docker push $ORGANIZATION_SERVICE_IMAGE
+      - kube-orb/install-kubectl
+      - kube-orb/install-kubeconfig
+      - run: kubectl set image deployments/organization-service organization-service=${ORGANIZATION_SERVICE_IMAGE}
+
+workflows:
+  version: 2
+  build_test_deploy:
+    jobs:
+      - activity-service
+      - idea_service
+      - organization-service

@@ -1,0 +1,115 @@
+version: "3.7"
+
+services:
+  activity-service:
+    image: activity-service:${TARGET:-test}
+    container_name: activity-service-${TARGET:-test}
+    hostname: activity-service
+    ports:
+      - 5000:5000
+    build:
+      context: ./services/activity-service
+      target: ${TARGET:-test}
+    env_file:
+      - ./env/postgres.env
+      - ./env/schema-registry.env
+      - ./env/activity-service.env
+    depends_on:
+      - postgres
+      - schema-registry
+
+  idea-service:
+    image: idea-service:${TARGET:-test}
+    container_name: idea-service-${TARGET:-test}
+    hostname: idea-service
+    build:
+      context: ./services/idea-service
+      target: ${TARGET:-test}
+    ports:
+      - 8080:8080
+    env_file:
+      - ./env/postgres.env
+      - ./env/idea-service.env
+    depends_on:
+      - postgres
+
+  organization-service:
+    image: organization-service:${TARGET:-test}
+    container_name: organization-service-${TARGET:-test}
+    hostname: organization-service
+    ports:
+      - 5001:5001
+    build:
+      context: ./services/organization-service
+      target: ${TARGET:-test}
+    env_file:
+      ./env/organization-service.env
+    depends_on:
+      - sql-server
+
+  postgres:
+    image: postgres:11
+    container_name: postgres-test
+    hostname: postgres
+    ports:
+      - 5432:5432
+    env_file:
+      - ./env/postgres.env
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+
+  sql-server:
+    image: sql-server
+    container_name: sql-server-test
+    hostname: sql-server
+    build:
+      context: .
+      dockerfile: sql-server.Dockerfile
+    ports:
+      - 1433:1433
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Pass@Word
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:5.5.1
+    container_name: zookeeper-test
+    hostname: zookeeper
+    ports:
+      - 2181:2181
+    env_file:
+      - ./env/zookeeper.env
+
+  kafka:
+    image: confluentinc/cp-kafka:5.5.1
+    container_name: kafka-test
+    hostname: kafka
+    ports:
+      - 9092:9092
+    env_file:
+      - ./env/kafka.env
+    depends_on: 
+      - zookeeper
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:5.5.1
+    container_name: schema-registry-test
+    hostname: schema-registry
+    ports:
+      - 8081:8081
+    env_file:
+      - ./env/schema-registry.env
+    depends_on:
+      - zookeeper
+      - kafka
+
+  dockerize:
+    container_name: dockerize-test
+    image: jwilder/dockerize:0.6.1
+    command: dockerize -wait $URL -timeout 30s --wait-retry-interval 5s
+
+networks:
+  default:
+    name: portfolioapp-test
+    driver: bridge

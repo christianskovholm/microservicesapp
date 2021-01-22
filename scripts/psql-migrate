@@ -1,0 +1,21 @@
+#!/bin/bash
+
+export PGHOST=$1
+
+db_name=$2
+sql_file=$3
+
+until psql -c '\q'; do
+    >&2 echo "Postgres is unavailable - retrying in 1 second"
+    sleep 1
+done
+
+# create database if it doesn't exist
+if [[ $(psql -tAc "SELECT 1 FROM pg_database WHERE datname='$db_name'") != 1 ]];
+then
+    psql -c "CREATE DATABASE $db_name"
+else
+    echo "database "$db_name" already exists"
+fi
+
+psql -d $db_name -f $sql_file

@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: microservicesapp-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  rules:
+    - http:
+        paths:
+        - backend:
+            serviceName: activity-service
+            servicePort: 80
+          path: /activityservice/(.+)
+        - backend:
+            serviceName: idea-service
+            servicePort: 80
+          path: /ideaservice/(.+)
+        - backend:
+            serviceName: organization-service
+            servicePort: 80
+          path: /organizationservice/(.+)

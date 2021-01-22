@@ -1,0 +1,175 @@
+version: "3.7"
+
+services:
+  activity-service:
+    image: activity-service:dev
+    container_name: activity-service-dev
+    hostname: activity-service
+    build:
+      context: ./services/activity-service
+      target: dev
+    ports:
+      - 5000:5000
+    env_file:
+      - ./env/postgres.env
+      - ./env/schema-registry.env
+      - ./env/activity-service.env
+    volumes:
+      - ./services/activity-service:/app:rw
+      - ./scripts/psql-migrate:/etc/psql-migrate:ro
+      - ./confluent/kafka/librdkafka.config:/etc/librdkafka.config:ro
+      - ./confluent/schema-registry/schema-registry.config:/etc/schema-registry.config:ro
+    depends_on:
+      - postgres
+      - schema-registry
+
+  idea-service:
+    image: idea-service:dev
+    container_name: idea-service-dev
+    build:
+      context: ./services/idea-service
+      target: dev
+    ports:
+      - 8080:8080
+    env_file:
+      - ./env/postgres.env
+      - ./env/idea-service.env
+    volumes:
+      - ./scripts/psql-migrate:/etc/psql-migrate:ro
+      - ./services/idea-service:/app:rw
+      - $HOME/go/pkg:/go/pkg:rw
+    depends_on:
+      - postgres
+
+  organization-service:
+    container_name: organization-service-dev
+    image: organization-service:dev
+    build:
+      context: ./services/organization-service
+      target: dev
+    ports:
+      - 5001:5001
+    env_file:
+      ./env/organization-service.env
+    volumes:
+      - ./services/organization-service/src:/app/src:rw
+      - ./services/organization-service/scripts:/app/scripts:ro
+    depends_on:
+      - sql-server
+
+  postgres:
+    image: postgres:11
+    container_name: postgres-dev
+    hostname: postgres
+    ports:
+      - 5432:5432
+    env_file:
+      - ./env/postgres.env
+    environment:
+      PGHOSTNAME: localhost
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  sql-server:
+    image: sql-server
+    container_name: sql-server-dev
+    hostname: sql-server
+    build:
+      context: .
+      dockerfile: sql-server.Dockerfile
+    ports:
+      - 1433:1433
+    environment: 
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Pass@Word
+    volumes:
+      - sql-server-data:/var/opt/mssql/data
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:5.5.1
+    container_name: zookeeper-dev
+    hostname: zookeeper
+    ports:
+      - 2181:2181
+    env_file:
+      - ./env/zookeeper.env
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-log:/var/lib/zookeeper/log
+
+  kafka:
+    image: confluentinc/cp-kafka:5.5.1
+    container_name: kafka-dev
+    hostname: kafka
+    ports:
+      - 9092:9092
+    env_file:
+      - ./env/kafka.env
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    depends_on:
+      - zookeeper
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:5.5.1
+    container_name: schema-registry-dev
+    hostname: schema-registry
+    ports:
+      - 8081:8081
+    env_file:
+      - ./env/schema-registry.env
+    depends_on:
+      - zookeeper
+      - kafka
+
+  connect:
+    image: confluentinc/cp-kafka-connect:5.5.1
+    container_name: connect-dev
+    hostname: connect
+    ports:
+      - 8083:8083
+    env_file:
+      - ./env/connect.env
+    volumes:
+      - ./confluent/kafka-connect/jars/:/etc/kafka-connect/jars
+    depends_on:
+      - postgres
+      - sql-server
+      - schema-registry
+
+  rest-proxy:
+    image: confluentinc/cp-kafka-rest:5.5.1
+    container_name: rest-proxy-dev
+    hostname: rest-proxy
+    depends_on:
+      - schema-registry
+    ports:
+      - 8082:8082
+    env_file:
+      - ./env/rest-proxy.env
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:5.5.1
+    container_name: control-center-dev
+    hostname: control-center
+    depends_on:
+      - schema-registry
+      - connect
+    ports:
+      - 9021:9021
+    env_file:
+      - ./env/control-center.env
+
+networks:
+  default:
+    name: portfolioapp-dev
+    driver: bridge
+
+volumes:
+  zookeeper-data:
+  zookeeper-log:
+  kafka-data:
+  postgres-data:
+  sql-server-data:

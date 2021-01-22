@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: idea-service
+spec:
+  selector:
+    app: idea-service
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: idea-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: idea-service
+  template:
+    metadata:
+      name: idea-service
+      labels:
+        app: idea-service
+    spec:
+      containers:
+        - name: idea-service
+          image: acrprodnortheurope001.azurecr.io/idea-service:3859c5d
+          ports:
+            - containerPort: 8080
+          env:
+            - name: POSTGRES_CONN_STR
+              valueFrom:
+                  secretKeyRef:
+                    name: idea-service-secret
+                    key: connstr
+          resources: {}

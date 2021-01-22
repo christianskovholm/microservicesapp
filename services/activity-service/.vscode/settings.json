@@ -1,0 +1,10 @@
+{
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.pythonPath": "/home/christian/.local/share/virtualenvs/activity-service-oelS7oe9/bin/python"
+}

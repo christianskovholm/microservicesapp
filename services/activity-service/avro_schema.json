@@ -1,0 +1,32 @@
+{
+	"fields": [
+	  {
+		"name": "id",
+		"type": "int"
+	  },
+	  {
+		"name": "organization_id",
+		"type": "int"
+	  },
+	  {
+		"name": "payload",
+		"type": "string"
+	  },
+	  {
+		"name": "timestamp",
+		"type": {
+		  "connect.name": "org.apache.kafka.connect.data.Timestamp",
+		  "connect.version": 1,
+		  "logicalType": "timestamp-millis",
+		  "type": "long"
+		}
+	  },
+	  {
+		"name": "event_type",
+		"type": "string"
+	  }
+	],
+	"name": "ConnectDefault",
+	"namespace": "io.confluent.connect.avro",
+	"type": "record"
+  }

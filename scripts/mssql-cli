@@ -1,0 +1,10 @@
+#!/bin/bash
+
+db_name=$DB_NAME
+
+if [[ -z $db_name  ]]
+then
+    db_name=master
+fi
+
+mssql-cli -S localhost -U sa -P $SA_PASSWORD -d $db_name
