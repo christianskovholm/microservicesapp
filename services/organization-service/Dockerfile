@@ -1,4 +1,4 @@
-ARG DOTNET_SDK_VERSION=5.0.100-buster-slim-amd64
+ARG DOTNET_SDK_VERSION=5.0.102-ca-patch-buster-slim-amd64
 
 FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_SDK_VERSION} as base
 
