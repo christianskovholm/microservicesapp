@@ -15,12 +15,12 @@ namespace OrganizationService.Application.Migrations
                 name: "events",
                 columns: table => new
                 {
-                    id = table.Column<int>(nullable: false)
+                    id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    organization_id = table.Column<int>(nullable: false),
-                    payload = table.Column<string>(nullable: false),
+                    organization_id = table.Column<int>(type: "int", nullable: false),
+                    payload = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     timestamp = table.Column<DateTime>(type: "datetime2(0)", nullable: false),
-                    event_type = table.Column<string>(nullable: false)
+                    event_type = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -31,12 +31,12 @@ namespace OrganizationService.Application.Migrations
                 name: "Organizations",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Description = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     Created = table.Column<DateTimeOffset>(type: "DateTimeOffset(0)", nullable: false),
-                    LastUpdated = table.Column<DateTimeOffset>(type: "DateTimeOffset(0)", nullable: false),
-                    Description = table.Column<string>(maxLength: 200, nullable: true),
-                    Name = table.Column<string>(maxLength: 50, nullable: true)
+                    LastUpdated = table.Column<DateTimeOffset>(type: "DateTimeOffset(0)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -47,12 +47,12 @@ namespace OrganizationService.Application.Migrations
                 name: "Departments",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    OrganizationId = table.Column<int>(type: "int", nullable: true),
                     Created = table.Column<DateTimeOffset>(type: "DateTimeOffset(0)", nullable: false),
-                    LastUpdated = table.Column<DateTimeOffset>(type: "DateTimeOffset(0)", nullable: false),
-                    Name = table.Column<string>(maxLength: 50, nullable: true),
-                    OrganizationId = table.Column<int>(nullable: true)
+                    LastUpdated = table.Column<DateTimeOffset>(type: "DateTimeOffset(0)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -69,12 +69,12 @@ namespace OrganizationService.Application.Migrations
                 name: "Roles",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    OrganizationId = table.Column<int>(type: "int", nullable: true),
                     Created = table.Column<DateTimeOffset>(type: "DateTimeOffset(0)", nullable: false),
-                    LastUpdated = table.Column<DateTimeOffset>(type: "DateTimeOffset(0)", nullable: false),
-                    Name = table.Column<string>(maxLength: 100, nullable: true),
-                    OrganizationId = table.Column<int>(nullable: true)
+                    LastUpdated = table.Column<DateTimeOffset>(type: "DateTimeOffset(0)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -91,13 +91,13 @@ namespace OrganizationService.Application.Migrations
                 name: "Members",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
+                    RoleId = table.Column<int>(type: "int", nullable: true),
+                    DepartmentId = table.Column<int>(type: "int", nullable: true),
                     Created = table.Column<DateTimeOffset>(type: "DateTimeOffset(0)", nullable: false),
-                    LastUpdated = table.Column<DateTimeOffset>(type: "DateTimeOffset(0)", nullable: false),
-                    Name = table.Column<string>(maxLength: 150, nullable: true),
-                    RoleId = table.Column<int>(nullable: true),
-                    DepartmentId = table.Column<int>(nullable: true)
+                    LastUpdated = table.Column<DateTimeOffset>(type: "DateTimeOffset(0)", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -10,24 +10,26 @@ using OrganizationService.Infrastructure;
 namespace OrganizationService.Application.Migrations
 {
     [DbContext(typeof(OrganizationDbContext))]
-    [Migration("20201115125003_Initial")]
+    [Migration("20210430071728_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.6")
+                .UseIdentityColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("Relational:Sequence:.organizationseq", "'organizationseq', '', '1', '5', '', '', 'Int32', 'False'")
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "5.0.0");
+
+            modelBuilder.HasSequence<int>("organizationseq")
+                .IncrementsBy(5);
 
             modelBuilder.Entity("OrganizationService.Domain.Aggregates.Organization.Department", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
                     b.Property<DateTimeOffset>("Created")
                         .HasColumnType("DateTimeOffset(0)");
@@ -36,8 +38,8 @@ namespace OrganizationService.Application.Migrations
                         .HasColumnType("DateTimeOffset(0)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(50)")
-                        .HasMaxLength(50);
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("int");
@@ -54,7 +56,7 @@ namespace OrganizationService.Application.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
                     b.Property<DateTimeOffset>("Created")
                         .HasColumnType("DateTimeOffset(0)");
@@ -66,8 +68,8 @@ namespace OrganizationService.Application.Migrations
                         .HasColumnType("DateTimeOffset(0)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(150)")
-                        .HasMaxLength(150);
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<int?>("RoleId")
                         .HasColumnType("int");
@@ -86,21 +88,21 @@ namespace OrganizationService.Application.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
                     b.Property<DateTimeOffset>("Created")
                         .HasColumnType("DateTimeOffset(0)");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(200)")
-                        .HasMaxLength(200);
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset>("LastUpdated")
                         .HasColumnType("DateTimeOffset(0)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(50)")
-                        .HasMaxLength(50);
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -112,7 +114,7 @@ namespace OrganizationService.Application.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
                     b.Property<DateTimeOffset>("Created")
                         .HasColumnType("DateTimeOffset(0)");
@@ -121,8 +123,8 @@ namespace OrganizationService.Application.Migrations
                         .HasColumnType("DateTimeOffset(0)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(100)")
-                        .HasMaxLength(100);
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("int");
@@ -138,27 +140,27 @@ namespace OrganizationService.Application.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnName("id")
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnName("id")
+                        .UseIdentityColumn();
 
                     b.Property<string>("EventType")
                         .IsRequired()
-                        .HasColumnName("event_type")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("event_type");
 
                     b.Property<int>("OrganizationId")
-                        .HasColumnName("organization_id")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("organization_id");
 
                     b.Property<string>("Payload")
                         .IsRequired()
-                        .HasColumnName("payload")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("payload");
 
                     b.Property<DateTime>("Timestamp")
-                        .HasColumnName("timestamp")
-                        .HasColumnType("datetime2(0)");
+                        .HasColumnType("datetime2(0)")
+                        .HasColumnName("timestamp");
 
                     b.HasKey("Id");
 
@@ -181,6 +183,8 @@ namespace OrganizationService.Application.Migrations
                     b.HasOne("OrganizationService.Domain.Aggregates.Organization.Role", "Role")
                         .WithMany()
                         .HasForeignKey("RoleId");
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("OrganizationService.Domain.Aggregates.Organization.Role", b =>
@@ -188,6 +192,18 @@ namespace OrganizationService.Application.Migrations
                     b.HasOne("OrganizationService.Domain.Aggregates.Organization.Organization", null)
                         .WithMany("Roles")
                         .HasForeignKey("OrganizationId");
+                });
+
+            modelBuilder.Entity("OrganizationService.Domain.Aggregates.Organization.Department", b =>
+                {
+                    b.Navigation("Members");
+                });
+
+            modelBuilder.Entity("OrganizationService.Domain.Aggregates.Organization.Organization", b =>
+                {
+                    b.Navigation("Departments");
+
+                    b.Navigation("Roles");
                 });
 #pragma warning restore 612, 618
         }
