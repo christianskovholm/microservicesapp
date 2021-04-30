@@ -18,7 +18,7 @@ namespace OrganizationService.UnitTests
             // Arrange
             var datetime = DateTimeOffset.UtcNow;
             var organization = new Organization("test", "test");
-            var command = new CreateDepartmentCommand { Name = "test" };
+            var command = new CreateDepartmentCommand("test", organization.Id);
             var handler = new CreateDepartmentCommandHandler(OrganizationRepositoryMock.Object);
 
             OrganizationRepositoryMock.Setup(x => x.GetAsync(organization.Id)).Returns(Task.FromResult(organization));

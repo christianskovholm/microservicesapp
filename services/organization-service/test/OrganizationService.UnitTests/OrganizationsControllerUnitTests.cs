@@ -48,8 +48,8 @@ namespace OrganizationService.UnitTests
         {
             // Arrange
             var organization = new Organization("test", "test");
+            var command = new CreateOrganizationCommand("test", "test" );
             var expectedResult = new HttpResponseBody(new IdResponse(organization.Id));
-            var command = new CreateOrganizationCommand { Name = "test", Description = "test" };
 
             _mockMediator
                 .Setup(x => x.Send(It.Is<CreateOrganizationCommand>(x => x == command), new CancellationToken()))
@@ -68,7 +68,7 @@ namespace OrganizationService.UnitTests
             // Arrange
             var organizationId = 1;
             var department = new Department("test");
-            var command = new CreateDepartmentCommand { Name = "test" };
+            var command = new CreateDepartmentCommand("test", organizationId);
             var expectedResult = new HttpResponseBody(new IdResponse(department.Id));
 
             _mockMediator
@@ -76,7 +76,7 @@ namespace OrganizationService.UnitTests
                 .ReturnsAsync(department);
 
             // Act
-            var result = await _controller.CreateDepartment(command, organizationId) as OkObjectResult;
+            var result = await _controller.CreateDepartment(command) as OkObjectResult;
 
             // Assert
             result.Value.Should().BeEquivalentTo(expectedResult);
@@ -88,7 +88,7 @@ namespace OrganizationService.UnitTests
             // Arrange
             var organizationId = 1;
             var role = new Role("test");
-            var command = new CreateRoleCommand { RoleName = "test" };
+            var command = new CreateRoleCommand("test", organizationId);
             var expectedResult = new HttpResponseBody(new IdResponse(role.Id));
 
             _mockMediator.
@@ -111,7 +111,7 @@ namespace OrganizationService.UnitTests
             var departmentId = 1;
             var organizationId = 1;
             var member = new Member("test", new Role("test"));
-            var command = new CreateMemberCommand { Name = "test", RoleId = 1 };
+            var command = new CreateMemberCommand("test", 1, organizationId, departmentId);
             var expectedResult = new HttpResponseBody(new IdResponse(member.Id));
 
             _mockMediator.
@@ -123,7 +123,7 @@ namespace OrganizationService.UnitTests
                 .ReturnsAsync(member);
 
             // Act
-            var result = await _controller.CreateMember(command, organizationId, departmentId) as OkObjectResult;
+            var result = await _controller.CreateMember(command) as OkObjectResult;
 
             // Assert
             result.Value.Should().BeEquivalentTo(expectedResult);

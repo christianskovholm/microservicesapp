@@ -12,7 +12,7 @@ namespace OrganizationService.UnitTests
         public async void Handle_Should_Create_Organization()
         {
             // Arrange
-            var command = new CreateOrganizationCommand { Name = "test", Description = "test" };
+            var command = new CreateOrganizationCommand("test", "test");
             var handler = new CreateOrganizationCommandHandler(OrganizationRepositoryMock.Object);
 
             // Act

@@ -18,7 +18,7 @@ namespace OrganizationService.FunctionalTests
             return new TestServer(hostBuilder);
         }
 
-        public static TestServer CreateOrganization(this TestServer testServer, Organization organization)
+        public static Organization CreateOrganization(this TestServer testServer, Organization organization)
         {
             using (var scope = testServer.Host.Services.CreateScope())
             {
@@ -29,7 +29,7 @@ namespace OrganizationService.FunctionalTests
                 }
             }
 
-            return testServer;
+            return organization;
         }
 
         public static StringContent ToStringContent(this object command) => new StringContent(JsonConvert.SerializeObject(command), UTF8Encoding.UTF8, "application/json");

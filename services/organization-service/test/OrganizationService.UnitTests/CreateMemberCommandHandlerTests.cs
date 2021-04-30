@@ -16,12 +16,13 @@ namespace OrganizationService.UnitTests
         {
             // Arrange
             var organization = new Organization("test", "test");
-            var command = new CreateMemberCommand { Name = "test" };
-            var handler = new CreateMemberCommandHandler(OrganizationRepositoryMock.Object);
+            var role = organization.CreateRole("test");
+            var department = organization.CreateDepartment("test");
 
-            organization.CreateRole("test");
-            organization.CreateDepartment("test");
             OrganizationRepositoryMock.Setup(x => x.GetAsync(organization.Id)).Returns(Task.FromResult(organization));
+
+            var command = new CreateMemberCommand("test", role.Id, organization.Id, department.Id);
+            var handler = new CreateMemberCommandHandler(OrganizationRepositoryMock.Object);
 
             // Act
             await handler.Handle(command, new CancellationToken());

@@ -16,7 +16,7 @@ namespace OrganizationService.UnitTests
         {
             // Arrange
             var organization = new Organization("test", "test");
-            var command = new CreateRoleCommand { RoleName = "test" };
+            var command = new CreateRoleCommand("test", organization.Id);
             var handler = new CreateRoleCommandHandler(OrganizationRepositoryMock.Object);
 
             OrganizationRepositoryMock.Setup(x => x.GetAsync(organization.Id)).Returns(Task.FromResult(organization));

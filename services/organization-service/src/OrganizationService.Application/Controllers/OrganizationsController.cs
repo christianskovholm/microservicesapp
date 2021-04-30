@@ -58,10 +58,9 @@ namespace OrganizationService.Application.Controllers
         /// </summary>
         /// <returns>Task object with an ObjectResult as result.</returns>
         [HttpPost]
-        [Route("{organizationId}/departments")]
-        public async Task<IActionResult> CreateDepartment([FromBody]CreateDepartmentCommand command, int organizationId)
+        [Route("departments")]
+        public async Task<IActionResult> CreateDepartment([FromBody]CreateDepartmentCommand command)
         {
-            command.OrganizationId = organizationId;
             var department = await _mediator.Send(command);
             var response = new IdResponse(department.Id);
 
@@ -73,10 +72,9 @@ namespace OrganizationService.Application.Controllers
         /// </summary>
         /// <returns>Task object with an ObjectResult as result.</returns>
         [HttpPost]
-        [Route("{organizationId}/roles")]
+        [Route("roles")]
         public async Task<IActionResult> CreateRole([FromBody]CreateRoleCommand command, int organizationId)
         {
-            command.OrganizationId = organizationId;
             var role = await _mediator.Send(command);
             var response = new IdResponse(role.Id);
 
@@ -88,11 +86,9 @@ namespace OrganizationService.Application.Controllers
         /// </summary>
         /// <returns>Task object with an ObjectResult as result.</returns>
         [HttpPost]
-        [Route("{organizationId}/departments/{departmentId}/members")]
-        public async Task<IActionResult> CreateMember([FromBody]CreateMemberCommand command, int organizationId, int departmentId)
+        [Route("departments/members")]
+        public async Task<IActionResult> CreateMember([FromBody]CreateMemberCommand command)
         {
-            command.DepartmentId = departmentId;
-            command.OrganizationId = organizationId;
             var member = await _mediator.Send(command);
             var response = new IdResponse(member.Id);
 
